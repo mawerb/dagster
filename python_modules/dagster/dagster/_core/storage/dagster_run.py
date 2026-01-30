@@ -213,6 +213,10 @@ class DagsterRunSerializer(NamedTupleSerializer["DagsterRun"]):
             unpacked_dict["solids_to_execute"] = unpacked_dict["solid_subset"]
             del unpacked_dict["solid_subset"]
 
+        # back compat: subscribed_to_notifications was added later
+        if "subscribed_to_notifications" not in unpacked_dict:
+            unpacked_dict["subscribed_to_notifications"] = None
+
         return unpacked_dict
 
 
@@ -260,6 +264,7 @@ class DagsterRun(
         has_repository_load_data (bool): Whether the run has repository load data.
         run_op_concurrency (Optional[RunOpConcurrency]): The op concurrency information for the run.
         partitions_subset (Optional[PartitionsSubset]): The subset of partitions to execute.
+        subscribed_to_notifications (Optional[AbstractSet[str]]): User IDs subscribed to runcompletion notifications
     """
 
     job_name: PublicAttr[str]
@@ -286,6 +291,9 @@ class DagsterRun(
     # NOTE: if you are expanding the valid set, be mindful of older versions not handling it.
     partitions_subset: Optional[Union[TimeWindowPartitionsSubset, KeyRangesPartitionsSubset]]
 
+    # User IDs subscribed to run completion notifications (e.g. "notify me when this run completes").
+    subscribed_to_notifications: Optional[AbstractSet[str]]
+
     def __new__(
         cls,
         job_name: str,
@@ -307,6 +315,7 @@ class DagsterRun(
         has_repository_load_data: Optional[bool] = None,
         run_op_concurrency: Optional[RunOpConcurrency] = None,
         partitions_subset: Optional[PartitionsSubset] = None,
+        subscribed_to_notifications: Optional[AbstractSet[str]] = None,
     ):
         check.invariant(
             (root_run_id is not None and parent_run_id is not None)
@@ -349,6 +358,7 @@ class DagsterRun(
             else has_repository_load_data,
             run_op_concurrency=run_op_concurrency,
             partitions_subset=partitions_subset,
+            subscribed_to_notifications=subscribed_to_notifications,
         )
 
     def with_status(self, status: DagsterRunStatus) -> Self:

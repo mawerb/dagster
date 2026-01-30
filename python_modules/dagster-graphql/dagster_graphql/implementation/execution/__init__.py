@@ -61,6 +61,7 @@ if TYPE_CHECKING:
         GrapheneTerminateRunFailure,
         GrapheneTerminateRunsResult,
         GrapheneTerminateRunSuccess,
+        GrapheneSubscribeToNotificationsSuccess,
     )
     from dagster_graphql.schema.util import ResolveInfo
 
@@ -417,3 +418,24 @@ def report_runless_asset_events(
         )
 
     return GrapheneReportRunlessAssetEventsSuccess(assetKey=asset_key)
+
+def subscribe_to_notifications(
+    graphene_info: "ResolveInfo",
+    run_id: str,
+    subscribe: bool,
+) -> "GrapheneSubscribeToNotificationsSuccess":
+    from dagster_graphql.schema.roots.mutation import GrapheneSubscribeToNotificationsSuccess
+
+    instance = graphene_info.context.instance
+
+    record = instance.get_run_record_by_id(run_id)
+    if not record:
+        return GrapheneRunNotFoundError(run_id)
+
+    # TODO: Persist subscribe/unsubscribe in a separate run_notification_subscriptions
+    # table (run_id, user_id) instead of on the run record. Get current user from
+    # graphene_info.context and INSERT or DELETE one row.
+    return GrapheneSubscribeToNotificationsSuccess(
+        runID=run_id,
+        subscribedToNotifications=subscribe,
+    )

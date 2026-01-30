@@ -5,11 +5,11 @@ import {useState} from 'react';
 export const RunAlertNotifications = ({runId}: {runId: string}) => {
   const [subscribed, setSubscribed] = useState(false);
 
-  const label = subscribed ? 'Notifications ' : 'Notify on completion';
+  const label = subscribed ? 'Notifications On ' : 'Notify on completion';
   const icon = subscribed ? 'success' : 'notifications';
 
   return (
-    <Tooltip content={subscribed ? 'You will be notified when this run completes' : undefined}>
+    <Tooltip content={subscribed ? 'You will be notified when this run completes' : 'Click to subscribe to notifications for this run'}>
       <Button
         icon={<Icon name={icon} />}
         onClick={() => {
