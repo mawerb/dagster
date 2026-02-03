@@ -14,6 +14,7 @@ from dagster._daemon.asset_daemon import set_auto_materialize_paused
 from dagster_graphql.implementation.execution import (
     delete_pipeline_run,
     report_runless_asset_events,
+    subscribe_to_notifications,
     terminate_pipeline_execution,
     terminate_pipeline_execution_for_runs,
     wipe_assets,
@@ -892,6 +893,54 @@ class GrapheneReportRunlessAssetEventsMutation(graphene.Mutation):
         )
 
 
+class GrapheneSubscribeToNotificationsSuccess(graphene.ObjectType):
+    """Output indicating that subscribing to a run was successful."""
+
+    runID = graphene.NonNull(graphene.String)
+    subscribedToNotifications = graphene.NonNull(graphene.Boolean)
+
+    class Meta:
+        name = "SubscribeToNotificationsSuccess"
+
+
+class GrapheneSubscribeToNotificationsResult(graphene.Union):
+    """The output from subscribing to notifications for a run."""
+
+    class Meta:
+        types = (
+            GrapheneRunNotFoundError,
+            GrapheneUnauthorizedError,
+            GraphenePythonError,
+            GrapheneSubscribeToNotificationsSuccess,
+        )
+        name = "SubscribeToNotificationsResult"
+
+
+class GrapheneSubscribeToNotificationsMutation(graphene.Mutation):
+    """Subscribes to notifications for a run."""
+
+    Output = graphene.NonNull(GrapheneSubscribeToNotificationsResult)
+
+    class Meta:
+        name = "SubscribeToNotificationsMutation"
+
+    class Arguments:
+        runId = graphene.NonNull(graphene.String)
+        subscribe = graphene.NonNull(graphene.Boolean)
+        email = graphene.NonNull(graphene.String)
+
+    @capture_error
+    def mutate(
+        self, graphene_info: ResolveInfo, runId: str, subscribe: bool, email: str
+    ):
+        return subscribe_to_notifications(
+            graphene_info, 
+            runId, 
+            subscribe,
+            email,
+        )
+
+
 class GrapheneLogTelemetrySuccess(graphene.ObjectType):
     """Output indicating that telemetry was logged."""
 
@@ -1095,3 +1144,4 @@ class GrapheneMutation(graphene.ObjectType):
     deleteConcurrencyLimit = GrapheneDeleteConcurrencyLimitMutation.Field()
     freeConcurrencySlotsForRun = GrapheneFreeConcurrencySlotsForRunMutation.Field()
     freeConcurrencySlots = GrapheneFreeConcurrencySlotsMutation.Field()
+    subscribeToNotifications = GrapheneSubscribeToNotificationsMutation.Field()
