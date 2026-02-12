@@ -400,8 +400,12 @@ export const TERMINATE_MUTATION = gql`
 `;
 
 export const SUBSCRIBE_TO_NOTIFICATIONS_MUTATION = gql`
-  mutation SubscribeToNotifications($runId: String!, $subscribe: Boolean!, $email: String!) {
-    subscribeToNotifications(runId: $runId, subscribe: $subscribe, email: $email) {
+  mutation SubscribeToNotifications(
+    $runId: String!
+    $subscribe: Boolean!
+    $browserId: String!
+  ) {
+    subscribeToNotifications(runId: $runId, subscribe: $subscribe, browserId: $browserId) {
       ...PythonErrorFragment
       ... on SubscribeToNotificationsSuccess {
         runID

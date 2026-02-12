@@ -927,17 +927,17 @@ class GrapheneSubscribeToNotificationsMutation(graphene.Mutation):
     class Arguments:
         runId = graphene.NonNull(graphene.String)
         subscribe = graphene.NonNull(graphene.Boolean)
-        email = graphene.NonNull(graphene.String)
+        browserId = graphene.NonNull(graphene.String)
 
     @capture_error
     def mutate(
-        self, graphene_info: ResolveInfo, runId: str, subscribe: bool, email: str
+        self, graphene_info: ResolveInfo, runId: str, subscribe: bool, browserId: str
     ):
         return subscribe_to_notifications(
             graphene_info, 
             runId, 
             subscribe,
-            email,
+            browserId,
         )
 
 

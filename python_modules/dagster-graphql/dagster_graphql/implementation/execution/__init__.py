@@ -2,7 +2,6 @@ import asyncio
 import json
 import os
 import sys
-from email_validator import validate_email, EmailNotValidError
 from collections.abc import AsyncIterator, Mapping, Sequence
 from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union  # noqa: F401, UP035
 
@@ -424,17 +423,14 @@ def subscribe_to_notifications(
     graphene_info: "ResolveInfo",
     run_id: str,
     subscribe: bool,
-    email: str,
+    browser_id: str,
 ):
-    from dagster_graphql.schema.errors import GrapheneInvalidEmailError, GrapheneRunNotFoundError
+    from dagster_graphql.schema.errors import GrapheneRunNotFoundError
     from dagster_graphql.schema.roots.mutation import GrapheneSubscribeToNotificationsSuccess
 
     instance = graphene_info.context.instance
-    
-    try:
-        validate_email(email)
-    except EmailNotValidError:
-        return GrapheneInvalidEmailError(email=email)
+
+    check.str_param(browser_id, "browser_id")
 
     record = instance.get_run_record_by_id(run_id)
     if not record:
@@ -445,12 +441,12 @@ def subscribe_to_notifications(
     subscribers = json.loads(current_raw) if current_raw else []
 
     if subscribe:
-        if email not in subscribers:
-            subscribers.append(email)
+        if browser_id not in subscribers:
+            subscribers.append(browser_id)
             instance.run_storage.set_cursor_values({key: json.dumps(subscribers)})
     else:
-        if email in subscribers:
-            subscribers.remove(email)
+        if browser_id in subscribers:
+            subscribers.remove(browser_id)
             if subscribers:
                 instance.run_storage.set_cursor_values({key: json.dumps(subscribers)})
             else:
