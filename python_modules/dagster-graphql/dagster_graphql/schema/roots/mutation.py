@@ -939,6 +939,7 @@ class GrapheneReportAssetCheckEvaluationMutation(graphene.Mutation):
         severity = AssetCheckSeverity(severity_raw) if severity_raw else AssetCheckSeverity.ERROR
         serialized_metadata = eventParams.get("serializedMetadata")
         metadata = json.loads(serialized_metadata) if serialized_metadata else None
+        partition = eventParams.get("partition")
 
         asset_graph = graphene_info.context.asset_graph
 
@@ -953,6 +954,7 @@ class GrapheneReportAssetCheckEvaluationMutation(graphene.Mutation):
             passed=passed,
             severity=severity,
             metadata=metadata,
+            partition=partition,
         )
 
 
