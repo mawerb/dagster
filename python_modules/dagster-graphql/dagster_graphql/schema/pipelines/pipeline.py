@@ -689,16 +689,6 @@ class GrapheneRun(graphene.ObjectType):
             else None
         )
 
-    def resolve_notificationSubscribers(self, _graphene_info: ResolveInfo):
-        import json
-
-        instance = _graphene_info.context.instance
-        key = f"run_notification_subscribers:{self.run_id}"
-
-        current_raw = instance.run_storage.get_cursor_values({key}).get(key)
-        subscribers = json.loads(current_raw) if current_raw else []
-        return subscribers
-
     def resolve_pipeline(self, graphene_info: ResolveInfo):
         return get_job_reference_or_raise(graphene_info, self.dagster_run)
 
